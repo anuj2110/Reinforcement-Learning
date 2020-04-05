@@ -42,7 +42,7 @@ class Agent:
         '''
         for state in range(self.n_states):
             for action in range(self.n_actions):
-                self.Q[(state,actions)] = 0
+                self.Q[(state,action)] = 0
     
     def decrement_epsilon(self):
 
@@ -50,7 +50,7 @@ class Agent:
         This function is used to decrease the epsilon value over time so that our agent first explores
         the environment and based on the experience exploits it. Simple epsilon-greedy approach.
         '''
-        self.eps = self.eps *self.eps_decay if self.eps>self.eps_end else self.eps_end
+        self.eps = self.eps*self.eps_decay if self.eps>self.eps_end else self.eps_end
 
     def choose_action(self,state):
 
@@ -61,7 +61,7 @@ class Agent:
         '''
         
         if np.random.random()>self.eps:
-            actions = np.array([Q[(state,a)] for a in range(self.n_actions)])
+            actions = np.array([self.Q[(state,a)] for a in range(self.n_actions)])
             action = np.argmax(actions)
         else:
             action = np.random.choice([a for a in range(self.n_actions)])
@@ -73,7 +73,7 @@ class Agent:
         This functions is for the learning step of the agent.
         We update the Q/policy table via the equation
 
-         Q(s,a) = Q(s,a) + learning_rate*(reward + max(Q(s',a)) - Q(s,a))
+         Q(s,a) = Q(s,a) + learning_rate*(reward + gamma*max(Q(s',a')) - Q(s,a))
 
          where 
             1. s --> current state
@@ -83,13 +83,13 @@ class Agent:
          After this we decrease or epsilon      
         '''
         
-        actions = np.array([Q[(state,a)] for a in range(self.n_actions)])
+        actions = np.array([self.Q[(state_,a)] for a in range(self.n_actions)])
         action_max = np.argmax(actions)
 
         self.Q[(state,action)] = self.Q[(state,action)] + \
                                  self.lr*(
                                      reward+
-                                     self.Q[(state_,action_max)] -
+                                      self.gamma*self.Q[(state_,action_max)] -
                                      self.Q[(state,action)]
                                  )
         self.decrement_epsilon()
